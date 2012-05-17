@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Gister3 do
+describe Growler do
 
   it "fails" do
     Gister3.new

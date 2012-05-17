@@ -14,14 +14,15 @@ class Growler
 
     full_response = OpenStruct.new parsed_data
     response = OpenStruct.new full_response.items
-
-    # response.each do |growl|
-    #   puts growl
-    #   puts "~~~~~~~~~~~~"
-    # end
-
     response = response.most_recent
-    foo = response.first
+    growls = []
+
+    response.each do |growl|
+      growl = OpenStruct.new growl
+      growls << growl
+    end
+    return growls
+    
   end
 
 end
