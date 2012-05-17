@@ -1,1 +1,1 @@
-require_relative '../lib/gister3.rb'
+require_relative '../lib/growler.rb'
