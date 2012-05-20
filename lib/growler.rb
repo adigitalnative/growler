@@ -20,9 +20,9 @@ class Growler
   def post_message(user, token, comment)
     growl_body = { type: "Message", comment: comment }
     
-    posted = connect.post 'v1/feeds/user/items', { token: token, body: growl_body.to_json }
+    the_growl = connect.post "v1/feeds/#{user}/items", { token: token, body: growl_body.to_json }
 
-    status = posted.status
+    status = the_growl.status
     if status == 201
       puts "Congratulations, you have growled successfully. Here's a summary."
       puts "Status: #{status}"
@@ -33,9 +33,6 @@ class Growler
       puts "There was a problem. Please try your growl again."
       puts "Status: #{status}"
     end
-    
-
-
 
     # Eventually may need to use this format to use auth-headers
     # connect.post do |request|
@@ -46,10 +43,41 @@ class Growler
 
   end
 
+  # If passing no comment, must use 'nil' for comment
   def post_image(user, token, url, comment)
     growl_body = { type: "Image", link: url, comment: comment }
 
-    connect.post
+    the_growl = connect.post "v1/feeds/#{user}/items", { token: token, body: growl_body.to_json }
+
+    status = the_growl.status
+    if status == 201
+      puts "Congratulations, you growled successfully. Here's a summary:"
+      puts "Status: #{status}"
+      puts "User: #{user}"
+      puts "Type: Image"
+      puts "Comment: #{comment}"
+    else
+      puts "There was a problem. Please try your growl again"
+      puts "Status: #{status}"
+    end
+  end
+
+  def post_url(user, token, url, comment)
+    growl_body = { type: "Link", link: url, comment: comment }
+
+    the_growl = connect.post "v1/feeds/#{user}/items", { token: token, body: growl_body.to_json }
+
+    status = the_growl.status
+    if status == 201
+      puts "Congratulations, you growled successfully. Here's a summary:"
+      puts "Status: #{status}"
+      puts "User: #{user}"
+      puts "Type: Link"
+      puts "Comment: #{comment}"
+    else
+      puts "There was a problem. Please try your growl again"
+      puts "Status: #{status}"
+    end
   end
 
 end
