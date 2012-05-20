@@ -19,7 +19,7 @@ class Growler
 
   def post_message(user, token, comment)
     growl_body = { type: "Message", comment: comment }
-    
+
     the_growl = connect.post "v1/feeds/#{user}/items", { token: token, body: growl_body.to_json }
 
     status = the_growl.status
@@ -62,6 +62,8 @@ class Growler
     end
   end
 
+
+  # If passing no comment, must use 'nil' for comment
   def post_url(user, token, url, comment)
     growl_body = { type: "Link", link: url, comment: comment }
 
@@ -80,4 +82,7 @@ class Growler
     end
   end
 
+  def regrowl
+    regrowl = connect.post "v1/feeds/adigitalnative/growls/55/refeed", { token: "tsukahara"}
+  end
 end
