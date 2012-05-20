@@ -18,15 +18,19 @@ class Growler
   end
 
   # Not currently functional b/c api doesn't have functionality
-  # def post_growl(user, token, type, comment)
-  #   # @growl_body = "{'type':'#{type},'comment':'#{comment}'}"
+  def post_growl(user, token, type, comment)
+    # @growl_body = "{ 'type':#{type},'comment':#{comment} }"
+    # @growl_body.to_json
     
-  #   connect.post do |request|
-  #     request.url "v1/feeds/#{user}/items.json",
-  #       { :token => "#{token}"}
-  #     # request.headers['AUTH-TOKEN'] = token
-  #     request.body "Foo"
-  #   end
-  # end
+    connect.post 'v1/feeds/jq/items', { token: "tsukahara", body: {type: "Message", comment: "Foo" }.to_json }
+    # connect.post do |request|
+    #   request.url "v1/feeds/#{user}/items",
+    #     { :token => "#{token}"}
+    #   # request.headers['AUTH-TOKEN'] = token
+    #   request.body @growl_body
+    # end
+
+    # puts "Foo"
+  end
 
 end
