@@ -20,7 +20,7 @@ class Growler
   def post_message(user, token, comment)
     growl_body = { type: "Message", comment: comment }
     
-    posted = connect.post 'v1/feeds/jq/items', { token: token, body: growl_body.to_json }
+    posted = connect.post 'v1/feeds/user/items', { token: token, body: growl_body.to_json }
 
     status = posted.status
     if status == 201
@@ -34,6 +34,9 @@ class Growler
       puts "Status: #{status}"
     end
     
+
+
+
     # Eventually may need to use this format to use auth-headers
     # connect.post do |request|
     #   request.url "v1/feeds/#{user}/items", { :token => "#{token}"}
