@@ -40,7 +40,6 @@ class Growler
     # #   # request.headers['AUTH-TOKEN'] = token
     #   request.body growl_body.to_json
     # end
-
   end
 
   # If passing no comment, must use 'nil' for comment
@@ -82,7 +81,8 @@ class Growler
     end
   end
 
-  def regrowl
-    regrowl = connect.post "v1/feeds/adigitalnative/growls/55/refeed", { token: "tsukahara"}
+  # TODO: Figure out what is determing regrowling user for a regrowl to the url.
+  def regrowl(user, token, growl_id)
+    regrowl = connect.post "v1/feeds/#{user}/growls/#{growl_id}/refeed", { token: "#{token}" }
   end
 end
