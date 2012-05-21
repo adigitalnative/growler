@@ -18,6 +18,12 @@ describe Growler do
         growl.class.should == Hashie::Mash
       end
     end
+
+    it "rejects a bad token" do
+      client = Growler.new
+      growls = client.get_user_growls(user, "not_a_token")
+      growls.should == nil
+    end
   end
 
   describe "post_message" do

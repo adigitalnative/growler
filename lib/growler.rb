@@ -21,11 +21,14 @@ class Growler
   def get_user_growls(user, token)
     user_growls = connect.get "v1/feeds/#{user}.json",
       { :token => "#{token}" }
-    user_growls = user_growls.body
-    parsed_growls = JSON.parse(user_growls)
-    
-    full_response = Hashie::Mash.new parsed_growls
-    growls = full_response.items.most_recent
+    if user_growls.status == 200
+      parsed_growls = JSON.parse(user_growls.body)
+      full_response = Hashie::Mash.new parsed_growls
+      growls = full_response.items.most_recent
+    else
+      puts "There is a problem with your request. Please try again"
+      puts "Error Message: #{user_growls.status}"
+    end
   end
 
   def post_message(user, token, comment)
