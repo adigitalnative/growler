@@ -19,8 +19,11 @@ class Growler
   end
 
   def get_user_growls(user, token)
-    user_growls = connect.get "v1/feeds/#{user}.json",
-      { :token => "#{token}" }
+    user_growls = connect.get do |req|
+      req.url "v1/feeds/#{user}.json"
+      req.headers['AUTH_TOKEN'] = token
+    end
+
     if user_growls.status == 200
       parsed_growls = JSON.parse(user_growls.body)
       full_response = Hashie::Mash.new parsed_growls
@@ -33,65 +36,68 @@ class Growler
 
   def post_message(user, token, comment)
     growl_body = { type: "Message", comment: comment }
-    the_growl = connect.post "v1/feeds/#{user}/items", { token: token, body: growl_body.to_json }
 
-    status = the_growl.status
-    if status == 201
-      successful_post_message
-      puts "Post: Message"
-    else
-      failed_post_message
+    the_growl = connect.post do |req|
+      req.url "v1/feeds/#{user}/items", { body: growl_body.to_json }
+      req.headers['AUTH_TOKEN'] = token
     end
 
-    # Eventually may need to use this format to use auth-headers
-    # connect.post do |request|
-    #   request.url "v1/feeds/#{user}/items", { :token => "#{token}"}
-    # #   # request.headers['AUTH-TOKEN'] = token
-    #   request.body growl_body.to_json
-    # end
+    if the_growl.status == 201
+      successful_post_message(the_growl.status, user, growl_body)
+      puts "Post: Message"
+    else
+      failed_post_message(the_growl.status)
+    end
   end
 
   def post_image(user, token, url, comment)
     growl_body = { type: "Image", link: url, comment: comment }
-    the_growl = connect.post "v1/feeds/#{user}/items", { token: token, body: growl_body.to_json }
 
-    status = the_growl.status
-    if status == 201
-      successful_post_message
+    the_growl = connect.post do |req|
+      req.url "v1/feeds/#{user}/items", { body: growl_body.to_json }
+      req.headers['AUTH_TOKEN'] = token
+    end
+
+    if the_growl.status == 201
+      successful_post_message(the_growl.status, user, growl_body)
       puts "Type: Image"
     else
-      failed_post_message
+      failed_post_message(the_growl.status)
     end
   end
 
 
   def post_url(user, token, url, comment)
     growl_body = { type: "Link", link: url, comment: comment }
-    the_growl = connect.post "v1/feeds/#{user}/items", { token: token, body: growl_body.to_json }
+    the_growl = connect.post do |req|
+      req.url "v1/feeds/#{user}/items", { body: growl_body.to_json }
+      req.headers['AUTH_TOKEN'] = token
+    end
 
-    status = the_growl.status
-    if status == 201
-      successful_post_message
+    if the_growl.status == 201
+      successful_post_message(the_growl.status, user, growl_body)
       puts "Type: Link"
     else
-      failed_post_message
+      failed_post_message(the_growl.status)
     end
   end
 
   # User should be same as growl_id's user. Token identifies retweeter
   def regrowl(user, user_token, growl_id)
-    regrowl = connect.post "v1/feeds/#{user}/growls/#{growl_id}/refeed", { token: "#{user_token}" }
+    regrowl = connect.post do |req|
+      req.url "v1/feeds/#{user}/growls/#{growl_id}/refeed"
+      req.headers['AUTH_TOKEN'] = user_token
+    end
 
-    status = regrowl.status
-    if status == 201
+    if regrowl.status == 201
       puts "Congratulations, you regrowled successfully."
-      puts "Status: #{status}"
+      puts "Status: #{regrowl.status}"
     else
-      failed_post_message
+      failed_post_message(regrowl.status)
     end
   end
 
-  def successful_post_message
+  def successful_post_message(status, user, growl_body)
     puts "Congratulations, you have growled successfully. Here's a summary."
     puts "Status: #{status}"
     puts "User: #{user}"
