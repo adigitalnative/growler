@@ -26,7 +26,7 @@ class Growler
       full_response = Hashie::Mash.new parsed_growls
       growls = full_response.items.most_recent
     else
-      puts "There is a problem with your request. Please try again"
+      puts "There is a problem with your request. Please try again."
       puts "Error Message: #{user_growls.status}"
     end
   end
