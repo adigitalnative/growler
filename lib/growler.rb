@@ -81,8 +81,17 @@ class Growler
     end
   end
 
-  # TODO: Figure out what is determing regrowling user for a regrowl to the url.
-  def regrowl(user, token, growl_id)
-    regrowl = connect.post "v1/feeds/#{user}/growls/#{growl_id}/refeed", { token: "#{token}" }
+  # User should be same as growl_id's user. Token identifies retweeter
+  def regrowl(user, user_token, growl_id)
+    regrowl = connect.post "v1/feeds/#{user}/growls/#{growl_id}/refeed", { token: "#{user_token}" }
+
+    status = regrowl.status
+    if status == 201
+      puts "Congratulations, you regrowled successfully."
+      puts "Status: #{status}"
+    else
+      puts "There was a problem. Please try your growl again"
+      puts "Status: #{status}"
+    end
   end
 end
