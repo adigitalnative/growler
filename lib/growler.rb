@@ -19,8 +19,11 @@ class Growler
   end
 
   def get_user_growls(user, token)
-    user_growls = connect.get "v1/feeds/#{user}.json",
-      { :token => "#{token}" }
+    user_growls = connect.get do |req|
+      req.url "v1/feeds/#{user}.json"
+      req.headers['AUTH_TOKEN'] = token
+    end
+    
     if user_growls.status == 200
       parsed_growls = JSON.parse(user_growls.body)
       full_response = Hashie::Mash.new parsed_growls
@@ -34,7 +37,7 @@ class Growler
   def post_message(user, token, comment)
     growl_body = { type: "Message", comment: comment }
     the_growl = connect.post "v1/feeds/#{user}/items", { token: token, body: growl_body.to_json }
-
+    
     status = the_growl.status
     if status == 201
       successful_post_message
