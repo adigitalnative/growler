@@ -23,7 +23,7 @@ class Growler
       req.url "v1/feeds/#{user}.json"
       req.headers['AUTH_TOKEN'] = token
     end
-    
+
     if user_growls.status == 200
       parsed_growls = JSON.parse(user_growls.body)
       full_response = Hashie::Mash.new parsed_growls
@@ -36,22 +36,18 @@ class Growler
 
   def post_message(user, token, comment)
     growl_body = { type: "Message", comment: comment }
-    the_growl = connect.post "v1/feeds/#{user}/items", { token: token, body: growl_body.to_json }
-    
-    status = the_growl.status
-    if status == 201
-      successful_post_message
-      puts "Post: Message"
-    else
-      failed_post_message
+
+    the_growl = connect.post do |req|
+      req.url "v1/feeds/#{user}/items", { body: growl_body.to_json }
+      req.headers['AUTH_TOKEN'] = token
     end
 
-    # Eventually may need to use this format to use auth-headers
-    # connect.post do |request|
-    #   request.url "v1/feeds/#{user}/items", { :token => "#{token}"}
-    # #   # request.headers['AUTH-TOKEN'] = token
-    #   request.body growl_body.to_json
-    # end
+    if the_growl.status == 201
+      successful_post_message(the_growl.status, user, growl_body)
+      puts "Post: Message"
+    else
+      failed_post_message(the_growl.status)
+    end
   end
 
   def post_image(user, token, url, comment)
@@ -94,7 +90,7 @@ class Growler
     end
   end
 
-  def successful_post_message
+  def successful_post_message(status, user, growl_body)
     puts "Congratulations, you have growled successfully. Here's a summary."
     puts "Status: #{status}"
     puts "User: #{user}"
