@@ -7,40 +7,31 @@ class Growler
     Faraday.new :url => "http://api.hungrlr.dev"
   end
 
-  def initialize
-    puts "Welcome to Growler!"
-    puts "You have started with a Growler named 'client'."
-    puts "Available commands are:"
-    puts "  get_user_growls(user, token)"
-    puts "  post_message(user, token, comment)"
-    puts "  post_image(user, token, url, comment)"
-    puts "  post_url(user, token, url, comment)"
-    puts "  regrowl(user, user_token, growl_id)"
-  end
-
   def get_user_growls(user, token)
     user_growls = connect.get "v1/feeds/#{user}.json",
       { :token => "#{token}" }
-    if user_growls.status == 200
-      parsed_growls = JSON.parse(user_growls.body)
-      full_response = Hashie::Mash.new parsed_growls
-      growls = full_response.items.most_recent
-    else
-      puts "There is a problem with your request. Please try again."
-      puts "Error Message: #{user_growls.status}"
-    end
+    user_growls = user_growls.body
+    parsed_growls = JSON.parse(user_growls)
+
+    full_response = Hashie::Mash.new parsed_growls
+    growls = full_response.items.most_recent
   end
 
   def post_message(user, token, comment)
     growl_body = { type: "Message", comment: comment }
+
     the_growl = connect.post "v1/feeds/#{user}/items", { token: token, body: growl_body.to_json }
 
     status = the_growl.status
     if status == 201
-      successful_post_message
-      puts "Post: Message"
+      puts "Congratulations, you have growled successfully. Here's a summary."
+      puts "Status: #{status}"
+      puts "User: #{user}"
+      puts "Type: Message"
+      puts "Comment: #{comment}"
     else
-      failed_post_message
+      puts "There was a problem. Please try your growl again."
+      puts "Status: #{status}"
     end
 
     # Eventually may need to use this format to use auth-headers
@@ -51,30 +42,42 @@ class Growler
     # end
   end
 
+  # If passing no comment, must use 'nil' for comment
   def post_image(user, token, url, comment)
     growl_body = { type: "Image", link: url, comment: comment }
+
     the_growl = connect.post "v1/feeds/#{user}/items", { token: token, body: growl_body.to_json }
 
     status = the_growl.status
     if status == 201
-      successful_post_message
+      puts "Congratulations, you growled successfully. Here's a summary:"
+      puts "Status: #{status}"
+      puts "User: #{user}"
       puts "Type: Image"
+      puts "Comment: #{comment}"
     else
-      failed_post_message
+      puts "There was a problem. Please try your growl again"
+      puts "Status: #{status}"
     end
   end
 
 
+  # If passing no comment, must use 'nil' for comment
   def post_url(user, token, url, comment)
     growl_body = { type: "Link", link: url, comment: comment }
+
     the_growl = connect.post "v1/feeds/#{user}/items", { token: token, body: growl_body.to_json }
 
     status = the_growl.status
     if status == 201
-      successful_post_message
+      puts "Congratulations, you growled successfully. Here's a summary:"
+      puts "Status: #{status}"
+      puts "User: #{user}"
       puts "Type: Link"
+      puts "Comment: #{comment}"
     else
-      failed_post_message
+      puts "There was a problem. Please try your growl again"
+      puts "Status: #{status}"
     end
   end
 
@@ -87,21 +90,8 @@ class Growler
       puts "Congratulations, you regrowled successfully."
       puts "Status: #{status}"
     else
-      failed_post_message
+      puts "There was a problem. Please try your growl again"
+      puts "Status: #{status}"
     end
   end
-
-  def successful_post_message
-    puts "Congratulations, you have growled successfully. Here's a summary."
-    puts "Status: #{status}"
-    puts "User: #{user}"
-    puts "Content: #{growl_body}"
-  end
-
-  def failed_post_message
-    puts "There was a problem. Please try your growl again"
-    puts "Status: #{status}"
-  end
 end
-
-client = Growler.new
