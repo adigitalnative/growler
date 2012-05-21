@@ -1,44 +1,52 @@
 require 'spec_helper'
 
 describe Growler do
-  let(:user) { "jq" }
-  let(:token) { "tsukahara" }
+  let(:user) { "wengzilla" }
+  let(:token) { "HUNGRLR" }
+  let(:client) { Growler.new(token)}
 
-  describe "get_user_growls" do
 
-    it "gets feeds" do
-      client = Growler.new
-      client.should respond_to(:get_user_growls)
+  describe "verify authentication" do
+    it "401 with invalid token" do
+      invalid_client = Growler.new("sdfsd")
+      invalid_client.status.should == 401
     end
 
-    it "provides an array of hashie mashes" do
-      client = Growler.new
-      growls = client.get_user_growls(user, token)
-      growls.each do |growl|
-        growl.class.should == Hashie::Mash
+    it "200 with VALID token" do
+      client.status.should == 200
+    end
+  end
+  describe ".get_user_growls" do
+    it "can get user growls" do
+      client.get_user_growls(user)[:status].should == 200
+      client.get_user_growls(user)[:response].first.class.should == Hashie::Mash
+    end
+    describe "Posting" do
+      it ".post_message" do
+        message = client.post_message("wengzilla", "Testing client gem")
+        message[:status].should == 201
+        client.destroy_post("wengzilla", message[:response]["id"])[:status].should == 201
+      end
+      it ".post_link" do
+        link = client.post_link("wengzilla", "http://google.com")
+        link[:status].should == 201
+        client.destroy_post("wengzilla", link[:response]["id"])[:status].should == 201
+      end
+      it ".post_image" do
+        image = client.post_image("wengzilla", "http://www.enn.com/image_for_articles/33228-1.jpg")
+        image[:status].should == 201
+        client.destroy_post("wengzilla", image[:response]["id"])[:status].should == 201
       end
     end
-
-    it "rejects a bad token" do
-      client = Growler.new
-      growls = client.get_user_growls(user, "not_a_token")
-      growls.should == nil
+    describe "Regrowl" do
+      it "Can regrowl" do
+        client.regrowl("mikesilvis", 7)[:status].should == 201
+      end
+      describe "Self destruct" do
+        it "Can Destroy regrowl" do
+          client.destroy_regrowl("mikesilvis", 7)[:status].should == 201
+        end
+      end
     end
-  end
-
-  describe "post_message" do
-    pending "could test in app, not client?"
-  end
-
-  describe "post_image" do
-    pending "could test in app, not client?"
-  end
-
-  describe "post_url" do
-    pending "could test in app, not client?"
-  end
-
-  describe "regrowl" do
-    pending "could test in app, not client?"
   end
 end

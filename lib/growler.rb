@@ -1,113 +1,87 @@
 class Growler
+  attr_accessor :token, :status, :message
   require 'faraday'
   require 'json'
   require 'hashie'
 
   def connect
-    Faraday.new :url => "http://api.hungrlr.dev"
+    Faraday.new :url => "http://api.hungrlr.dev/v1/"
   end
 
-  def initialize
-    puts "Welcome to Growler!"
-    puts "You have started with a Growler named 'client'."
-    puts "Available commands are:"
-    puts "  get_user_growls(user, token)"
-    puts "  post_message(user, token, comment)"
-    puts "  post_image(user, token, url, comment)"
-    puts "  post_url(user, token, url, comment)"
-    puts "  regrowl(user, user_token, growl_id)"
+  def initialize(token)
+    @token = token
+    @status = validate_token[0]
+    @message = validate_token[1]
   end
 
-  def get_user_growls(user, token)
-    user_growls = connect.get do |req|
-      req.url "v1/feeds/#{user}.json"
-      req.headers['AUTH_TOKEN'] = token
+  def validate_token
+    validation = connect.get do |req|
+                    req.url "validate_token.json"
+                    req.headers['AUTH_TOKEN'] = @token
+                  end
+    [validation.status, validation.body]
+  end
+
+  def get_user_growls(user)
+    resp = connect.get do |req|
+      req.url "feeds/#{user}.json"
+      req.headers['AUTH_TOKEN'] = @token
     end
-
-    if user_growls.status == 200
-      parsed_growls = JSON.parse(user_growls.body)
-      full_response = Hashie::Mash.new parsed_growls
-      growls = full_response.items.most_recent
-    else
-      puts "There is a problem with your request. Please try again."
-      puts "Error Message: #{user_growls.status}"
-    end
+    response = JSON.parse(resp.body)["items"]["most_recent"].collect do |growl|
+                 Hashie::Mash.new(growl)
+               end
+    {status: resp.status, response: response }
   end
 
-  def post_message(user, token, comment)
+  def post_message(user, comment)
     growl_body = { type: "Message", comment: comment }
-
-    the_growl = connect.post do |req|
-      req.url "v1/feeds/#{user}/items", { body: growl_body.to_json }
-      req.headers['AUTH_TOKEN'] = token
-    end
-
-    if the_growl.status == 201
-      successful_post_message(the_growl.status, user, growl_body)
-      puts "Post: Message"
-    else
-      failed_post_message(the_growl.status)
-    end
+    post(user,growl_body)
   end
 
-  def post_image(user, token, url, comment)
+  def post_image(user, url, comment=nil)
     growl_body = { type: "Image", link: url, comment: comment }
-
-    the_growl = connect.post do |req|
-      req.url "v1/feeds/#{user}/items", { body: growl_body.to_json }
-      req.headers['AUTH_TOKEN'] = token
-    end
-
-    if the_growl.status == 201
-      successful_post_message(the_growl.status, user, growl_body)
-      puts "Type: Image"
-    else
-      failed_post_message(the_growl.status)
-    end
+    post(user, growl_body)
   end
 
 
-  def post_url(user, token, url, comment)
+  def post_link(user, url, comment=nil)
     growl_body = { type: "Link", link: url, comment: comment }
-    the_growl = connect.post do |req|
-      req.url "v1/feeds/#{user}/items", { body: growl_body.to_json }
+    post(user, growl_body)
+  end
+
+  def post(user, content)
+    resp = connect.post do |req|
+      req.url "feeds/#{user}/growls", { body: content.to_json }
       req.headers['AUTH_TOKEN'] = token
     end
+    response_object = Hashie::Mash.new(JSON.parse(resp.body))
+    { status: resp.status, response: response_object }
+  end
 
-    if the_growl.status == 201
-      successful_post_message(the_growl.status, user, growl_body)
-      puts "Type: Link"
-    else
-      failed_post_message(the_growl.status)
+  def destroy_post(user, id)
+    resp = connect.delete do |req|
+      req.url "feeds/#{user}/growls", { id: id }
+      req.headers['AUTH_TOKEN'] = token
     end
+    { status: resp.status }
   end
 
-  # User should be same as growl_id's user. Token identifies retweeter
-  def regrowl(user, user_token, growl_id)
-    regrowl = connect.post do |req|
-      req.url "v1/feeds/#{user}/growls/#{growl_id}/refeed"
-      req.headers['AUTH_TOKEN'] = user_token
+  def regrowl(user, growl_id)
+    resp = connect.post do |req|
+      req.url "feeds/#{user}/growls/#{growl_id}/refeed"
+      req.headers['AUTH_TOKEN'] = @token
     end
+    { status: resp.status }
+  end
 
-    if regrowl.status == 201
-      puts "Congratulations, you regrowled successfully."
-      puts "Status: #{regrowl.status}"
-    else
-      failed_post_message(regrowl.status)
+  def destroy_regrowl(user, growl_id)
+    resp = connect.delete do |req|
+      req.url "feeds/#{user}/growls/#{growl_id}/refeed"
+      req.headers['AUTH_TOKEN'] = @token
     end
+    { status: resp.status }
   end
 
-  def successful_post_message(status, user, growl_body)
-    puts "Congratulations, you have growled successfully. Here's a summary."
-    puts "Status: #{status}"
-    puts "User: #{user}"
-    puts "Content: #{growl_body}"
-  end
-
-  def failed_post_message
-    puts "There was a problem. Please try your growl again"
-    puts "Status: #{status}"
-  end
 end
 
-client = Growler.new
+# client = Growler.new
