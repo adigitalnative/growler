@@ -30,19 +30,14 @@ class Growler
 
   def post_message(user, token, comment)
     growl_body = { type: "Message", comment: comment }
-
     the_growl = connect.post "v1/feeds/#{user}/items", { token: token, body: growl_body.to_json }
 
     status = the_growl.status
     if status == 201
-      puts "Congratulations, you have growled successfully. Here's a summary."
-      puts "Status: #{status}"
-      puts "User: #{user}"
-      puts "Type: Message"
-      puts "Comment: #{comment}"
+      successful_post_message
+      puts "Post: Message"
     else
-      puts "There was a problem. Please try your growl again."
-      puts "Status: #{status}"
+      failed_post_message
     end
 
     # Eventually may need to use this format to use auth-headers
@@ -53,42 +48,30 @@ class Growler
     # end
   end
 
-  # If passing no comment, must use 'nil' for comment
   def post_image(user, token, url, comment)
     growl_body = { type: "Image", link: url, comment: comment }
-
     the_growl = connect.post "v1/feeds/#{user}/items", { token: token, body: growl_body.to_json }
 
     status = the_growl.status
     if status == 201
-      puts "Congratulations, you growled successfully. Here's a summary:"
-      puts "Status: #{status}"
-      puts "User: #{user}"
+      successful_post_message
       puts "Type: Image"
-      puts "Comment: #{comment}"
     else
-      puts "There was a problem. Please try your growl again"
-      puts "Status: #{status}"
+      failed_post_message
     end
   end
 
 
-  # If passing no comment, must use 'nil' for comment
   def post_url(user, token, url, comment)
     growl_body = { type: "Link", link: url, comment: comment }
-
     the_growl = connect.post "v1/feeds/#{user}/items", { token: token, body: growl_body.to_json }
 
     status = the_growl.status
     if status == 201
-      puts "Congratulations, you growled successfully. Here's a summary:"
-      puts "Status: #{status}"
-      puts "User: #{user}"
+      successful_post_message
       puts "Type: Link"
-      puts "Comment: #{comment}"
     else
-      puts "There was a problem. Please try your growl again"
-      puts "Status: #{status}"
+      failed_post_message
     end
   end
 
@@ -101,9 +84,20 @@ class Growler
       puts "Congratulations, you regrowled successfully."
       puts "Status: #{status}"
     else
-      puts "There was a problem. Please try your growl again"
-      puts "Status: #{status}"
+      failed_post_message
     end
+  end
+
+  def successful_post_message
+    puts "Congratulations, you have growled successfully. Here's a summary."
+    puts "Status: #{status}"
+    puts "User: #{user}"
+    puts "Content: #{growl_body}"
+  end
+
+  def failed_post_message
+    puts "There was a problem. Please try your growl again"
+    puts "Status: #{status}"
   end
 end
 
