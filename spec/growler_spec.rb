@@ -4,21 +4,35 @@ describe Growler do
   let(:user) { "jq" }
   let(:token) { "tsukahara" }
 
-  it "provides an array of hashie mashes" do
-    client = Growler.new
-    growls = client.get_user_growls(user, token)
-    growls.each do |growl|
-      growl.class.should == Hashie::Mash
+  describe "get_user_growls" do
+
+    it "gets feeds" do
+      client = Growler.new
+      client.should respond_to(:get_user_growls)
+    end
+
+    it "provides an array of hashie mashes" do
+      client = Growler.new
+      growls = client.get_user_growls(user, token)
+      growls.each do |growl|
+        growl.class.should == Hashie::Mash
+      end
     end
   end
 
-  it "gives all the current user's growls" do
-    pending "TODO: Research accessing DB from gem"
+  describe "post_message" do
+    pending "could test in app, not client?"
   end
 
-  it "doesn't provide other growls" do
-    pending "TODO: Research accessing DB from gem"
+  describe "post_image" do
+    pending "could test in app, not client?"
   end
 
+  describe "post_url" do
+    pending "could test in app, not client?"
+  end
 
+  describe "regrowl" do
+    pending "could test in app, not client?"
+  end
 end

@@ -7,6 +7,17 @@ class Growler
     Faraday.new :url => "http://api.hungrlr.dev"
   end
 
+  def initialize
+    puts "Welcome to Growler!"
+    puts "You have started with a Growler named 'client'."
+    puts "Available commands are:"
+    puts "  get_user_growls(user, token)"
+    puts "  post_message(user, token, comment)"
+    puts "  post_image(user, token, url, comment)"
+    puts "  post_url(user, token, url, comment)"
+    puts "  regrowl(user, user_token, growl_id)"
+  end
+
   def get_user_growls(user, token)
     user_growls = connect.get "v1/feeds/#{user}.json",
       { :token => "#{token}" }
@@ -95,3 +106,5 @@ class Growler
     end
   end
 end
+
+client = Growler.new
