@@ -12,7 +12,7 @@ class Growler
       { :token => "#{token}" }
     user_growls = user_growls.body
     parsed_growls = JSON.parse(user_growls)
-    
+
     full_response = Hashie::Mash.new parsed_growls
     growls = full_response.items.most_recent
   end
