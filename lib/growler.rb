@@ -17,7 +17,7 @@ class Growler
   def validate_token
     validation = connect.get do |req|
                     req.url "validate_token.json"
-                    req.headers['AUTH_TOKEN'] = @token
+                    req.headers['AUTHTOKEN'] = @token
                   end
     [validation.status, validation.body]
   end
@@ -25,7 +25,7 @@ class Growler
   def get_user_growls(user)
     resp = connect.get do |req|
       req.url "feeds/#{user}.json"
-      req.headers['AUTH_TOKEN'] = @token
+      req.headers['AUTHTOKEN'] = @token
     end
     response = JSON.parse(resp.body)["items"]["most_recent"].collect do |growl|
                  Hashie::Mash.new(growl)
@@ -52,7 +52,7 @@ class Growler
   def post(user, content)
     resp = connect.post do |req|
       req.url "feeds/#{user}/growls", { body: content.to_json }
-      req.headers['AUTH_TOKEN'] = token
+      req.headers['AUTHTOKEN'] = token
     end
     response_object = Hashie::Mash.new(JSON.parse(resp.body))
     { status: resp.status, response: response_object }
@@ -61,7 +61,7 @@ class Growler
   def destroy_post(user, id)
     resp = connect.delete do |req|
       req.url "feeds/#{user}/growls", { id: id }
-      req.headers['AUTH_TOKEN'] = token
+      req.headers['AUTHTOKEN'] = token
     end
     { status: resp.status }
   end
@@ -69,7 +69,7 @@ class Growler
   def regrowl(user, growl_id)
     resp = connect.post do |req|
       req.url "feeds/#{user}/growls/#{growl_id}/refeed"
-      req.headers['AUTH_TOKEN'] = @token
+      req.headers['AUTHTOKEN'] = @token
     end
     { status: resp.status }
   end
@@ -77,7 +77,7 @@ class Growler
   def destroy_regrowl(user, growl_id)
     resp = connect.delete do |req|
       req.url "feeds/#{user}/growls/#{growl_id}/refeed"
-      req.headers['AUTH_TOKEN'] = @token
+      req.headers['AUTHTOKEN'] = @token
     end
     { status: resp.status }
   end
