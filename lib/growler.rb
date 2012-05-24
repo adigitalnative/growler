@@ -5,7 +5,7 @@ class Growler
   require 'hashie'
 
   def connect
-    Faraday.new :url => "http://api.hungrlr.com/v1/"
+    Faraday.new :url => "http://api.hungrlr.dev/v1/"
   end
 
   def initialize(token)
